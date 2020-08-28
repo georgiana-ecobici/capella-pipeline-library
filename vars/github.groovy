@@ -10,6 +10,27 @@ def getProjectName() {
 	return (GIT_URL =~ /[^\/]+(?=\.git$)/)[0]
 }
 
+def addCheckSuccess(id, message, url) {
+  pullRequest.createStatus(status: 'success',
+                           context: '${id}',
+                           description: '${message}',
+                           targetUrl: '${url}')
+}
+
+def addCheckError(id, message, url) {
+  pullRequest.createStatus(status: 'error',
+                           context: '${id}',
+                           description: '${message}',
+                           targetUrl: '${url}')
+}
+
+def addCheckPending(id, message, url) {
+  pullRequest.createStatus(status: 'pending',
+                           context: '${id}',
+                           description: '${message}',
+                           targetUrl: '${url}')
+}
+
 def pullRequestComment(message) {
   def pullRequestId = getPullRequestId()
 	def projectName = getProjectName()

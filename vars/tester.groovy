@@ -44,7 +44,15 @@ def runUITests(String capellaProductPath, String suiteTitle, String testPluginNa
     def junitCmd = getUIJunitCmd(capellaProductPath)
     def testClassNamesParam = testClassNames.join(' ')
     
+  	def message = ":rocket: Run testsuite ${suiteTitle}"
+    github.addCheckPending("${suiteTitle}", "Waiting tests")
+    
     sh "${runnerCmd} -title ${suiteTitle} & ${junitCmd} -data ${WORKSPACE}/${suiteTitle} -testpluginname ${testPluginName} -classNames ${testClassNamesParam}"
+    if (isTestKO()) {
+    	github.addCheckError("${suiteTitle}", "Tests KO")
+    } else {
+    	github.addCheckSuccess("${suiteTitle}", "Tests OK")
+    }
 }
 
 def runNONUITests(String capellaProductPath, String suiteTitle, String testPluginName, List<String> testClassNames) {
@@ -53,4 +61,10 @@ def runNONUITests(String capellaProductPath, String suiteTitle, String testPlugi
     def testClassNamesParam = testClassNames.join(' ')
     
     sh "${runnerCmd} -title ${suiteTitle} & ${junitCmd} -data ${WORKSPACE}/${suiteTitle} -testpluginname ${testPluginName} -classNames ${testClassNamesParam}"
+}
+
+def isTestKO(String filename){
+    def responseCode = sh returnStatus: true, script: "grep \'failure message\' ${filename}' &> grep.txt"
+    def output =  readFile(file: "grep.txt")
+    return (output != "")
 }
